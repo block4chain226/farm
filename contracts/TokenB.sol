@@ -6,19 +6,18 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TokenB is ERC20, Ownable {
 
-    uint256 constant public FEE = 1000 wei;
-
     constructor() ERC20("TokenB", "TKB"){
     }
 
-    modifier requireFee() {
-        require(msg.value == FEE, "you need to pay minting fee");
-        _;
-    }
+    uint public a;
 
-    function mint(address _account, uint256 _amount) external payable requireFee {
+    function mint(address _account, uint256 _amount) external {
         require(_account != address(0), "zero address");
         require(_amount > 0, "amount should be more than 0");
         _mint(_account, _amount);
+    }
+
+    function set() public {
+        a = 10;
     }
 }

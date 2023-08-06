@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "hardhat/console.sol";
 
 contract Farm is Ownable, ReentrancyGuard {
     struct Position {
@@ -34,20 +35,22 @@ contract Farm is Ownable, ReentrancyGuard {
     event DepositRewardToken(uint256 amount, uint256 indexed date);
 
     modifier requireFee() {
-        require(msg.value == FEE, "you need to pay minting fee");
+        require(msg.value == fee, "you need to pay minting fee");
         _;
     }
 
-    function stake(uint256 _amount) external  requireFee {
+    function stake(uint256 _amount) external payable requireFee {
+        console.log("sender = ", msg.sender);
         require(tokenB.balanceOf(msg.sender) >= _amount, "you don't have enough tokens");
         Position storage newPosition = positions[msg.sender];
-        tokenB.transfer(address(this), _amount);
+        tokenB.transferFrom(msg.sender, address(this), _amount);
         if (newPosition.amount > 0) {
             _claim();
         }
         newPosition.startDate = block.timestamp;
         newPosition.amount += _amount;
         totalStaked += _amount;
+        console.log("pos = ", positions[msg.sender].amount);
         emit Stake(msg.sender, _amount, newPosition.startDate);
     }
 
@@ -78,7 +81,7 @@ contract Farm is Ownable, ReentrancyGuard {
     function depositRewardToken(uint256 _amount) external onlyOwner {
         require(_amount > 0, "amount 0");
         require(tokenA.balanceOf(owner()) >= _amount, "you have not enough reward tokens");
-        tokenA.approve(address(this), _amount);
+        require(tokenA.allowance(msg.sender, address(this)) >= _amount, "you haven't enough allowance");
         tokenA.transferFrom(owner(), address(this), _amount);
         emit DepositRewardToken(_amount, block.timestamp);
     }
