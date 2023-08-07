@@ -16,7 +16,7 @@ contract Farm is Ownable, ReentrancyGuard {
     IERC20 public tokenB;
 
     uint256 public fee = 1000 wei;
-    uint256 public accRewardPerSecond = 100;
+    uint256 public accRewardPerSecond = 100000000000000;
     uint256 public totalStaked;
     uint256 public totalRewardsPaid;
 
@@ -69,7 +69,8 @@ contract Farm is Ownable, ReentrancyGuard {
         require(userPosition.amount > 0, "user don't stake");
         require(block.timestamp > userPosition.startDate, "time error");
         uint256 stakeTime = block.timestamp - userPosition.startDate;
-        uint256 claimAmount = (userPosition.amount * stakeTime * accRewardPerSecond) / 1e18;
+        uint256 claimAmount = (userPosition.amount * 365 * accRewardPerSecond) / 1e18;
+        console.log("claimAmount", claimAmount);
         require(claimAmount > 0, "user have not rewards");
         require(tokenA.balanceOf(address(this)) >= claimAmount, "contract has not enough reward tokens");
         tokenA.transfer(msg.sender, claimAmount);
