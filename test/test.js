@@ -24,20 +24,37 @@ async function deploy() {
     const tokenBContract = await deployer.deploy(TokenBArtifacts);
     const farmContract = await deployer.deploy(FarmArtifact, [tokenAContract.address, tokenBContract.address]);
 
-    return {tokenAContract, tokenBContract, farmContract, deployer, user, owner}
+    return {tokenAContract, tokenBContract, farmContract, deployer, user, owner, provider}
 }
 
+//   "@matterlabs/hardhat-zksync-verify": "^0.2.0",
 describe("TokenA", () => {
     it("test", async () => {
 
-        const {tokenAContract, tokenBContract, RICH_WALLET_PK, farmContract, user, deployer, owner} = await deploy();
-
-        await tokenBContract.mint(user.address, "100000000000000000000");
+        const {
+            tokenAContract,
+            tokenBContract,
+            RICH_WALLET_PK,
+            provider,
+            farmContract,
+            user,
+            deployer,
+            owner
+        } = await deploy();
+        await tokenBContract.mint(owner.address, "100000000000000000000");
+        console.log("owner B balance: ", (await tokenBContract.balanceOf(owner.address)).toString());
         await tokenAContract.approve(farmContract.address, "10000000000000000000");
         await farmContract.depositRewardToken("10000000000000000000");
-        await tokenBContract.approve(farmContract.address, "10000000000000000000");
-        await farmContract.connect(user).stake("10000000000000000000", {value: ethers.utils.formatUnits("1000", "wei")});
+        console.log("farm contract A balance: ", (await tokenAContract.balanceOf(farmContract.address)).toString());
+        await tokenBContract.approve(farmContract.address, "100000000000000000000");
+        await farmContract.stake("100000000000000000000", {value: ethers.utils.formatUnits("1000", "wei")});
+        console.log("farm contract B balance: ", (await tokenBContract.balanceOf(farmContract.address)).toString());
+        console.log("user B balance before: ", (await tokenBContract.balanceOf(owner.address)).toString());
+        //unstake does not return tokens
 
+        // await farmContract.unStake("1000000000000000000");
+        await farmContract.claim();
+        console.log("user B balance after: ", (await tokenBContract.balanceOf(owner.address)).toString());
 
     })
 })

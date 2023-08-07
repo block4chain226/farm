@@ -40,39 +40,39 @@ contract Farm is Ownable, ReentrancyGuard {
     }
 
     function stake(uint256 _amount) external payable requireFee {
-        console.log("sender = ", msg.sender);
         require(tokenB.balanceOf(msg.sender) >= _amount, "you don't have enough tokens");
         Position storage newPosition = positions[msg.sender];
         tokenB.transferFrom(msg.sender, address(this), _amount);
         if (newPosition.amount > 0) {
-            _claim();
+            claim();
         }
         newPosition.startDate = block.timestamp;
         newPosition.amount += _amount;
         totalStaked += _amount;
-        console.log("pos = ", positions[msg.sender].amount);
         emit Stake(msg.sender, _amount, newPosition.startDate);
     }
 
     function unStake(uint256 _amount) external nonReentrant {
         require(_amount > 0, "amount 0");
+        require(tokenB.balanceOf(address(this)) >= _amount, "contract hasn't enough tokens");
         Position storage userPosition = positions[msg.sender];
         require(userPosition.amount >= _amount, "you have not enough position amount");
-        _claim();
+        claim();
         userPosition.amount -= _amount;
         tokenB.transfer(msg.sender, _amount);
         totalStaked -= _amount;
         emit UnStake(msg.sender, _amount, block.timestamp);
     }
-
-    function _claim() internal nonReentrant requireFee {
+    //claim problem at unStake
+    function claim() public {
         Position storage userPosition = positions[msg.sender];
         require(userPosition.amount > 0, "user don't stake");
         require(block.timestamp > userPosition.startDate, "time error");
         uint256 stakeTime = block.timestamp - userPosition.startDate;
-        uint256 claimAmount = (userPosition.amount * stakeTime * accRewardPerSecond) / 3.154e7;
+        uint256 claimAmount = (userPosition.amount * stakeTime * accRewardPerSecond) / 1e18;
         require(claimAmount > 0, "user have not rewards");
-        tokenA.transferFrom(address(this), msg.sender, claimAmount);
+        require(tokenA.balanceOf(address(this)) >= claimAmount, "contract has not enough reward tokens");
+        tokenA.transfer(msg.sender, claimAmount);
         totalRewardsPaid += claimAmount;
         userPosition.startDate = block.timestamp;
         emit Claim(msg.sender, claimAmount, block.timestamp);
