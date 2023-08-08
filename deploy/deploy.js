@@ -16,23 +16,18 @@ module.exports = async function() {
     // Initialize the wallet.
     const wallet = new Wallet("d16e6c40dd9cf3377fcef37dbd686405a9ef8d4f1dd8349317f0e500777c4000");
 
-    // Create deployer object and load the artifact of the contract we want to deploy.
     const deployer = new Deployer(hre, wallet);
     // Load contract
-    const FarmArtifact1 = await deployer.loadArtifact("Farm");
-    const TokenAArtifacts = await deployer.loadArtifact("TokenA");
-    const TokenBArtifacts = await deployer.loadArtifact("TokenB");
+    const FarmArtifact = await deployer.loadArtifact("Farm");
+    const RewardTokenArtifacts = await deployer.loadArtifact("RewardToken");
+    const DepositTokenArtifacts = await deployer.loadArtifact("DepositToken");
 
-    // Deploy this contract. The returned object will be of a `Contract` type,
-    // similar to the ones in `ethers`.
-
-    // `greeting` is an argument for contract constructor.
-    const tokenAContract = await deployer.deploy(TokenAArtifacts);
-    const tokenBContract = await deployer.deploy(TokenBArtifacts);
-    const farmContract = await deployer.deploy(FarmArtifact1, [tokenAContract.address, tokenBContract.address]);
+    const rewardTokenContract = await deployer.deploy(RewardTokenArtifacts);
+    const depositTokenContract = await deployer.deploy(DepositTokenArtifacts);
+    const farmContract = await deployer.deploy(FarmArtifact, [rewardTokenContract.address, depositTokenContract.address]);
 
     // Show the contract info.
-    console.log(`${TokenAArtifacts.contractName} was deployed to ${tokenAContract.address}`);
-    console.log(`${TokenBArtifacts.contractName} was deployed to ${tokenBContract.address}`);
-    console.log(`${FarmArtifact1.contractName} was deployed to ${farmContract.address}`);
+    console.log(`${RewardTokenArtifacts.contractName} was deployed to ${rewardTokenContract.address}`);
+    console.log(`${DepositTokenArtifacts.contractName} was deployed to ${depositTokenContract.address}`);
+    console.log(`${FarmArtifact.contractName} was deployed to ${farmContract.address}`);
 }
