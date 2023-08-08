@@ -4,12 +4,6 @@ const hre = require("hardhat");
 const {Deployer} =
     require("@matterlabs/hardhat-zksync-deploy");
 
-//TokenA was deployed to 0xB27b7dEAb92f6581260BACBc856D15ec7E5f1AA4
-//TokenB was deployed to 0x390A1bb64f0c4b56B2196619419C0358b6927638
-//Farm was deployed to 0xf2A0e375157B4a2fF8E5fF99B2CE85Ed360EA94A
-
-
-// An example of a deploy script that will deploy and call a simple contract.
 module.exports = async function() {
     console.log(`Running deploy script`);
 
